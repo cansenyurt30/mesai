@@ -125,10 +125,10 @@ type Settings = {
 
 ## Geliştirme Adımları
 
-> **Durum:** Adım 1–11 tamamlandı; 1–10 canlıda (https://cansenyurt30.github.io/mesai/), 11 yalnızca yorum düzeltmesi.
-> **Sıradaki adım: 12.** Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
+> **Durum:** Adım 1–12 tamamlandı; 1–10 canlıda (https://cansenyurt30.github.io/mesai/), 11–12 push bekliyor (yorum düzeltmesi ve README).
+> **Sıradaki adım: 13.** Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
 
-### Tamamlananlar (1–11)
+### Tamamlananlar (1–12)
 
 1. **Kurulum:** Vite + React + TS + Tailwind projesini oluştur, klasör yapısını kur, boş ana ekranı göster.
 2. **Veri katmanı:** IndexedDB kayıt/okuma, `DayEntry` ve `Settings` için hook'lar (`useEntries`, `useSettings`).
@@ -293,7 +293,7 @@ Sorun: Şu an toplam ücret, o anki tek saatlik ücretle hesaplanıyor. Ücret d
 
 **Yeni adımlar için:**
 - [x] Kodda ve yorumlarda eski "0,5 adımlı" ifadesi kalmadı.
-- [ ] README repoda ve güncel.
+- [x] README repoda ve güncel. (push sonrası canlı)
 - [ ] Ücret değiştirildiğinde geçmiş ayların toplam ücreti değişmez.
 - [ ] Eski (`version: 1`) bir yedek, yeni sürümde sorunsuz geri yüklenir.
 - [ ] Güncellemeden sonra mevcut kayıtlar ve ücret olduğu gibi durur.
