@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, animate, motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Eye, EyeOff, Pencil, Share2, X } from 'lucide-react';
 import { formatHoursLong, formatMonthTitle } from '../lib/dates';
 import {
@@ -82,7 +82,7 @@ export default function SummaryCard({
         <div>
           <p className="text-sm font-medium text-white/80">{formatMonthTitle(month)}</p>
           <p className="mt-1 text-4xl font-bold leading-tight">
-            <CountUp value={totalHours} />
+            {formatHoursLong(totalHours)}
           </p>
           <p className="mt-1 text-xs text-white/70">Toplam mesai</p>
         </div>
@@ -195,46 +195,6 @@ export default function SummaryCard({
       </div>
     </section>
   );
-}
-
-const hoursNumber = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
-
-/** Değer değişince eski sayıdan yenisine yumuşakça sayar (ilk açılışta 0'dan). */
-function CountUp({ value }: { value: number }) {
-  const reduce = useReducedMotion();
-  const shown = useRef(0);
-  const [text, setText] = useState(formatHoursLong(0));
-
-  useEffect(() => {
-    if (reduce) {
-      shown.current = value;
-      setText(formatHoursLong(value));
-      return;
-    }
-    const controls = animate(shown.current, value, {
-      duration: 0.7,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => {
-        shown.current = v;
-        setText(`${hoursNumber.format(v)} saat`);
-      },
-      onComplete: () => {
-        shown.current = value;
-        setText(formatHoursLong(value));
-      },
-    });
-    // Animasyon kareleri durursa (arka plan, düşük güç modu) sayı yine de doğru görünsün.
-    const fallback = setTimeout(() => {
-      shown.current = value;
-      setText(formatHoursLong(value));
-    }, 1200);
-    return () => {
-      controls.stop();
-      clearTimeout(fallback);
-    };
-  }, [value, reduce]);
-
-  return <>{text}</>;
 }
 
 /** Gizli ↔ açık geçişinde hafif bulanıklaşarak değişen içerik. */

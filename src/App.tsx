@@ -39,6 +39,8 @@ export default function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
+  const ready = settingsLoaded && entriesLoaded;
+
   useTheme(settings.theme, settings.palette, settingsLoaded);
 
   useEffect(() => {
@@ -129,6 +131,12 @@ export default function App() {
         </motion.button>
       </motion.header>
 
+      {/*
+        Veriler (ayarlar + kayıtlar) okunana kadar içerik çizilmez: böylece çipler, yedek
+        hatırlatması ve toplamlar sonradan gelip her şeyi aşağı itmez; ekran tek seferde,
+        son haliyle belirir. Okuma saniyenin onda biri kadar sürer.
+      */}
+      {ready && (
       <main className="flex flex-col gap-4 pb-6">
         <motion.div {...enter(0.07)}>
           <SummaryCard
@@ -154,6 +162,7 @@ export default function App() {
           />
         </motion.div>
       </main>
+      )}
 
       <DaySheet
         date={selectedDay}

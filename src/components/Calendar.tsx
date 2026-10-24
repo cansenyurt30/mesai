@@ -28,7 +28,7 @@ type Props = {
 
 const SWIPE_DISTANCE = 60;
 const SWIPE_VELOCITY = 400;
-const SLIDE = 56;
+const SLIDE = 40;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 const monthVariants = {
@@ -71,7 +71,7 @@ export default function Calendar({
         </NavButton>
 
         <div className="relative h-7 flex-1 overflow-hidden text-center">
-          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+          <AnimatePresence initial={false} custom={direction}>
             <motion.h2
               key={toDateKey(month)}
               custom={direction}
@@ -104,8 +104,13 @@ export default function Calendar({
         ))}
       </div>
 
-      <div className="relative">
-        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+      {/*
+        Sabit yükseklik (6 hafta × 48 px): ayın 4, 5 ya da 6 satır olması takvimin ve
+        altındaki butonların yerini oynatmaz. Taşan kayma animasyonu kırpılır
+        (aksi halde sayfa yana sallanır). -mx-2 / inset-x-2: bugünün halkası kırpılmasın.
+      */}
+      <div className="relative -mx-2 h-[288px] overflow-hidden">
+        <AnimatePresence initial={false} custom={direction}>
           <MonthGrid
             key={toDateKey(month)}
             month={month}
@@ -256,13 +261,13 @@ const MonthGrid = forwardRef<HTMLDivElement, GridProps>(function MonthGrid(
       animate="center"
       exit="exit"
       transition={{ duration: 0.3, ease: EASE }}
-      style={{ x }}
+      style={{ x, willChange: 'transform' }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.3}
       dragTransition={{ bounceStiffness: 420, bounceDamping: 36 }}
       onDragEnd={handleDragEnd}
-      className="w-full"
+      className="absolute inset-x-2 top-0"
     >
       {/* Sürüklerken solar; giriş/çıkış opaklığı dıştaki katmanda */}
       <motion.div style={{ opacity: dragOpacity }} className="grid grid-cols-7">

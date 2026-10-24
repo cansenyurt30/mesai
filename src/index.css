@@ -54,6 +54,8 @@ body {
   -webkit-tap-highlight-color: transparent;
   /* Uygulama gibi hissettirir: çekince yenileme/zıplama ve uzun basma menüsü yok */
   overscroll-behavior-y: none;
+  /* Kayan öğeler yüzünden sayfa yana sallanmasın */
+  overflow-x: hidden;
   -webkit-touch-callout: none;
 }
 

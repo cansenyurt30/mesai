@@ -125,7 +125,7 @@ type Settings = {
 
 ## Geliştirme Adımları
 
-> **Durum:** Adım 1–12, 14, 16 ve 18 tamamlandı; 13 bilerek ertelendi. 16 push bekliyor (https://cansenyurt30.github.io/mesai/).
+> **Durum:** Adım 1–12, 14, 16 ve 18 tamamlandı; 13 bilerek ertelendi. hepsi push edildi (https://cansenyurt30.github.io/mesai/).
 > **Sıradaki adım:** 17 (sonra 15; 13 daha sonra). Adım 16 cevapları: dönem = işe giriş yıldönümü, hak = 14 gün, devreden gün elle girilir. Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
 
 ### Tamamlananlar (1–12)
