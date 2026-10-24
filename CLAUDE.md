@@ -125,8 +125,8 @@ type Settings = {
 
 ## Geliştirme Adımları
 
-> **Durum:** Adım 1–12 ve 14 tamamlandı; 13 bilerek ertelendi. 1–12 canlıda (https://cansenyurt30.github.io/mesai/); 14 push bekliyor.
-> **Sıradaki adım:** 18 (sonra 16 → 17 → 15; 13 daha sonra). Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
+> **Durum:** Adım 1–12, 14 ve 18 tamamlandı; 13 bilerek ertelendi. 1–14 canlıda (https://cansenyurt30.github.io/mesai/); 18 push bekliyor.
+> **Sıradaki adım:** 16 (sonra 17 → 15; 13 daha sonra). Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
 
 ### Tamamlananlar (1–12)
 
@@ -301,4 +301,4 @@ Sorun: Şu an toplam ücret, o anki tek saatlik ücretle hesaplanıyor. Ücret d
 - [ ] İstatistik ekranında yıllık grafik ve toplamlar doğru. Kazanç gizli başlar.
 - [ ] İzin türü seçilebilir. Yıllık izin kalan günü doğru sayılır.
 - [ ] Birden fazla gün tek seferde mesai ya da izin olarak işaretlenebilir.
-- [ ] Notlu günlerde nokta görünür, "Bugün" butonu çalışır, ay raporu paylaşılabilir. Ücret, paylaşılan rapora varsayılan olarak eklenmez.
+- [x] Notlu günlerde nokta görünür, "Bugün" butonu çalışır, ay raporu paylaşılabilir. Ücret, paylaşılan rapora varsayılan olarak eklenmez.

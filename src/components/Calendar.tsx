@@ -6,7 +6,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import type { PanInfo } from 'framer-motion';
-import { addMonths, isSameDay, subMonths } from 'date-fns';
+import { addMonths, isSameDay, isSameMonth, startOfMonth, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   WEEKDAY_LABELS,
@@ -49,6 +49,14 @@ export default function Calendar({
     onMonthChange(dir === 1 ? addMonths(month, 1) : subMonths(month, 1));
   };
 
+  // Başka bir aydaysak "Bugün" butonu bugünün ayına döndürür.
+  const thisMonth = startOfMonth(new Date());
+  const showToday = !isSameMonth(month, thisMonth);
+  const goToday = () => {
+    setDirection(thisMonth > month ? 1 : -1);
+    onMonthChange(thisMonth);
+  };
+
   return (
     <section
       className="rounded-3xl p-3 shadow-sm"
@@ -60,20 +68,52 @@ export default function Calendar({
           <ChevronLeft size={22} />
         </NavButton>
 
-        <div className="relative h-7 flex-1 overflow-hidden text-center">
-          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-            <motion.h2
-              key={toDateKey(month)}
-              custom={direction}
-              variants={monthVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.3, ease: EASE }}
-              className="absolute inset-x-0 text-lg font-semibold leading-7"
-            >
-              {formatMonthTitle(month)}
-            </motion.h2>
+        <div className="relative h-11 flex-1 overflow-hidden text-center">
+          {/* "Bugün" görünürken başlık, çakışmasın diye biraz sola kayar */}
+          <div
+            className="absolute inset-0 transition-[padding]"
+            style={{ paddingRight: showToday ? 52 : 0 }}
+          >
+            <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+              <motion.h2
+                key={toDateKey(month)}
+                custom={direction}
+                variants={monthVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.3, ease: EASE }}
+                className="absolute inset-0 flex items-center justify-center text-lg font-semibold"
+                style={{ paddingRight: 'inherit' }}
+              >
+                {formatMonthTitle(month)}
+              </motion.h2>
+            </AnimatePresence>
+          </div>
+
+          <AnimatePresence>
+            {showToday && (
+              <motion.button
+                type="button"
+                onClick={goToday}
+                aria-label="Bugünün ayına dön"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 top-0 flex h-11 items-center px-0.5"
+              >
+                <span
+                  className="rounded-full px-2.5 py-1 text-xs font-semibold"
+                  style={{
+                    background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
+                    color: 'var(--accent)',
+                  }}
+                >
+                  Bugün
+                </span>
+              </motion.button>
+            )}
           </AnimatePresence>
         </div>
 
@@ -229,7 +269,7 @@ function DayCell({ day, isToday, entry, onSelect }: DayCellProps) {
     <motion.button
       type="button"
       onClick={() => onSelect(day)}
-      aria-label={`${day.getDate()}${label ? `, ${label}` : ''}`}
+      aria-label={`${day.getDate()}${label ? `, ${label}` : ''}${entry?.note ? ', notlu' : ''}`}
       aria-current={isToday ? 'date' : undefined}
       whileTap={{ scale: 0.88 }}
       transition={{ type: 'spring', stiffness: 500, damping: 28 }}
@@ -265,6 +305,15 @@ function DayCell({ day, isToday, entry, onSelect }: DayCellProps) {
       <span className="relative text-[15px]">{day.getDate()}</span>
       {label && (
         <span className="relative mt-0.5 text-[10px] font-semibold">{label}</span>
+      )}
+      {/* Notu olan günlerde alt köşede küçük nokta */}
+      {entry?.note && (
+        <span
+          aria-hidden
+          data-note-dot
+          className="absolute bottom-[7px] right-[8px] h-1 w-1 rounded-full"
+          style={{ background: 'var(--on-fill)', opacity: 0.9 }}
+        />
       )}
     </motion.button>
   );

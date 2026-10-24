@@ -7,10 +7,13 @@ import Calendar from './components/Calendar';
 import DaySheet from './components/DaySheet';
 import PaletteSheet from './components/PaletteSheet';
 import SettingsSheet from './components/SettingsSheet';
+import ShareSheet from './components/ShareSheet';
 import SummaryCard from './components/SummaryCard';
+import Toast from './components/Toast';
 import { useEntries } from './hooks/useEntries';
 import { useSettings } from './hooks/useSettings';
 import { useTheme } from './hooks/useTheme';
+import { useToast } from './hooks/useToast';
 import { createBackup, saveBackupFile } from './lib/backup';
 import { getBackupReminder, snoozeUntil } from './lib/backupReminder';
 import { requestPersistentStorage } from './lib/db';
@@ -19,6 +22,7 @@ import { setSoundEnabled } from './lib/sound';
 import type { Backup } from './lib/backup';
 
 export default function App() {
+  const toast = useToast();
   const {
     entries,
     loaded: entriesLoaded,
@@ -26,12 +30,13 @@ export default function App() {
     removeEntry,
     replaceAll,
     clearAll,
-  } = useEntries();
+  } = useEntries(toast.show);
   const { settings, loaded: settingsLoaded, updateSettings, resetSettings } = useSettings();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useTheme(settings.theme, settings.palette, settingsLoaded);
 
@@ -66,6 +71,7 @@ export default function App() {
   const closeSheet = useCallback(() => setSelectedDay(null), []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const closePalette = useCallback(() => setPaletteOpen(false), []);
+  const closeShare = useCallback(() => setShareOpen(false), []);
 
   const restore = useCallback(
     async (backup: Backup) => {
@@ -126,6 +132,7 @@ export default function App() {
             entries={entries}
             hourlyRate={settings.hourlyRate}
             onRateChange={(rate) => void updateSettings({ hourlyRate: rate })}
+            onShare={() => setShareOpen(true)}
           />
           <BackupReminder
             message={backupMessage}
@@ -150,6 +157,16 @@ export default function App() {
         onClear={removeEntry}
         onClose={closeSheet}
       />
+
+      <ShareSheet
+        open={shareOpen}
+        month={month}
+        entries={entries}
+        hourlyRate={settings.hourlyRate}
+        onClose={closeShare}
+      />
+
+      <Toast message={toast.message} />
 
       <PaletteSheet
         open={paletteOpen}

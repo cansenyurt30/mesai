@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useReducedMotion } from 'framer-motion';
-import { Check, Eye, EyeOff, Pencil, X } from 'lucide-react';
+import { Check, Eye, EyeOff, Pencil, Share2, X } from 'lucide-react';
 import { formatHoursLong, formatMonthTitle } from '../lib/dates';
 import {
   formatCurrency,
@@ -16,11 +16,18 @@ type Props = {
   entries: EntryMap;
   hourlyRate: number;
   onRateChange: (rate: number) => void;
+  onShare: () => void;
 };
 
 const HIDDEN_TEXT = '••••• ₺';
 
-export default function SummaryCard({ month, entries, hourlyRate, onRateChange }: Props) {
+export default function SummaryCard({
+  month,
+  entries,
+  hourlyRate,
+  onRateChange,
+  onShare,
+}: Props) {
   // "Açık" durumu kaydedilmez: her açılışta ve arka plandan dönüşte gizli başlar.
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -77,28 +84,40 @@ export default function SummaryCard({ month, entries, hourlyRate, onRateChange }
           <p className="mt-1 text-xs text-white/70">Toplam mesai</p>
         </div>
 
-        <motion.button
-          type="button"
-          onClick={() => setRevealed((r) => !r)}
-          aria-label={revealed ? 'Ücretleri gizle' : 'Ücretleri göster'}
-          aria-pressed={revealed}
-          whileTap={{ scale: 0.85 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-          className="-mr-2 -mt-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 backdrop-blur-md"
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={revealed ? 'open' : 'closed'}
-              className="flex"
-              initial={{ scale: 0.5, rotate: -40, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }}
-              exit={{ scale: 0.5, rotate: 40, opacity: 0 }}
-              transition={{ duration: 0.16 }}
-            >
-              {revealed ? <Eye size={20} /> : <EyeOff size={20} />}
-            </motion.span>
-          </AnimatePresence>
-        </motion.button>
+        <div className="-mr-2 -mt-2 flex gap-2">
+          <motion.button
+            type="button"
+            onClick={onShare}
+            aria-label="Ay raporunu paylaş"
+            whileTap={{ scale: 0.85 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 backdrop-blur-md"
+          >
+            <Share2 size={19} />
+          </motion.button>
+          <motion.button
+            type="button"
+            onClick={() => setRevealed((r) => !r)}
+            aria-label={revealed ? 'Ücretleri gizle' : 'Ücretleri göster'}
+            aria-pressed={revealed}
+            whileTap={{ scale: 0.85 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 backdrop-blur-md"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={revealed ? 'open' : 'closed'}
+                className="flex"
+                initial={{ scale: 0.5, rotate: -40, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                exit={{ scale: 0.5, rotate: 40, opacity: 0 }}
+                transition={{ duration: 0.16 }}
+              >
+                {revealed ? <Eye size={20} /> : <EyeOff size={20} />}
+              </motion.span>
+            </AnimatePresence>
+          </motion.button>
+        </div>
       </div>
 
       <div className="relative mt-4 space-y-3 rounded-2xl border border-white/20 bg-white/15 p-4 backdrop-blur-md">

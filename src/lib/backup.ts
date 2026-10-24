@@ -1,6 +1,8 @@
 import { format } from 'date-fns';
 import { MAX_HOURS } from './config';
 import { isPaletteId } from './palettes';
+import { shareOrDownload } from './shareFile';
+import type { SaveResult } from './shareFile';
 import { DEFAULT_SETTINGS } from '../types';
 import type { DayEntry, Settings, ThemeMode } from '../types';
 
@@ -98,34 +100,12 @@ export function parseBackup(text: string): Backup {
   };
 }
 
-export type SaveResult = 'shared' | 'downloaded' | 'cancelled';
+export type { SaveResult } from './shareFile';
 
-/**
- * Yedeği `.json` dosyası olarak kaydeder. Dokunmatik cihazlarda (iPhone) paylaşım
- * menüsü açılır ("Dosyalara Kaydet"); olmazsa ya da masaüstünde doğrudan indirilir.
- */
-export async function saveBackupFile(backup: Backup): Promise<SaveResult> {
+/** Yedeği `.json` dosyası olarak kaydeder (iPhone'da paylaşım menüsüyle, masaüstünde indirerek). */
+export function saveBackupFile(backup: Backup): Promise<SaveResult> {
   const json = JSON.stringify(backup, null, 2);
   const fileName = `mesai-yedek-${format(new Date(), 'yyyy-MM-dd')}.json`;
   const file = new File([json], fileName, { type: 'application/json' });
-
-  if (navigator.maxTouchPoints > 0 && navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: 'Mesai yedeği' });
-      return 'shared';
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return 'cancelled';
-      // Paylaşım başarısızsa indirmeye düş.
-    }
-  }
-
-  const url = URL.createObjectURL(file);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
-  return 'downloaded';
+  return shareOrDownload(file, 'Mesai yedeği');
 }
