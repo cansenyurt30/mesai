@@ -125,6 +125,11 @@ type Settings = {
 
 ## Geliştirme Adımları
 
+> **Durum:** Adım 1–11 tamamlandı; 1–10 canlıda (https://cansenyurt30.github.io/mesai/), 11 yalnızca yorum düzeltmesi.
+> **Sıradaki adım: 12.** Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
+
+### Tamamlananlar (1–11)
+
 1. **Kurulum:** Vite + React + TS + Tailwind projesini oluştur, klasör yapısını kur, boş ana ekranı göster.
 2. **Veri katmanı:** IndexedDB kayıt/okuma, `DayEntry` ve `Settings` için hook'lar (`useEntries`, `useSettings`).
 3. **Takvim:** Aylık görünüm, ay geçişi, swipe, gün durum renkleri.
@@ -136,9 +141,143 @@ type Settings = {
 9. **iPhone'a kurulum rehberi:** README'ye yaz. Safari'de adresi aç → Paylaş → "Ana Ekrana Ekle".
 10. **Proje notları:** Her şey bittikten sonra `PROJE_NOTLARI.md` oluştur. Gelecekte değişiklik yapmak için: proje yapısı, her dosyanın görevi, alınan kararlar ve nedenleri, ayarlanabilir sabitler (`src/lib/config.ts`), veri modeli ve yedek formatı, bilinen sınırlar, "şunu eklemek/çıkarmak için nereye bakılır" tarifleri, sık komutlar.
 
-Her adımda:
+### Yeni adımlar (11–18)
+
+**Önemli: uygulama canlıda ve içinde gerçek veri var.**
+- Veri modelini değiştiren adımlarda (13, 14, 16) mevcut kayıtlar ve ayarlar **kaybolmamalı, bozulmamalı**.
+- Eski veriyi yeni şekle çeviren bir geçiş (migration) yaz. Bu geçiş uygulama açılışında, `db.ts` / `useSettings` içinde bir kez çalışsın.
+- Eski sürümden alınmış yedekler (`version: 1`) yeni sürümde **geri yüklenebilmeli**. Yeni yedekler `version: 2` olsun.
+- Bu adımların sonunda kullanıcıya şunu hatırlat: yeni sürümü yayınlamadan önce telefonda **Ayarlar → Yedekle** ile yedek alsın.
+
+---
+
+#### 11. Eski "0,5 adımlı" ifadelerini düzelt
+
+Saat seçimi artık **tam saat (1–24)**. Eski ifadeleri temizle:
+- `src/types/index.ts` içindeki `hours` yorumunu `// sadece 'mesai' için, tam saat (1–24)` yap.
+- Projede `0.5`, `0,5`, `yarım saat` ve `adımlı` kelimelerini ara. Kodda ve yorumlarda kalan eski ifadeleri güncelle.
+- Kalmasına izin verilenler:
+  - `PROJE_NOTLARI.md` içindeki "yarım saati geri getirmek" tarifi.
+  - Eski yarım saatli kayıtların takvimde gösterilmesi (`formatHours*`). Bu davranışa dokunma.
+
+#### 12. README'yi repoya ekle
+
+- `README.md` içeriğinin güncel olduğunu kontrol et:
+  - canlı adres
+  - iPhone'a kurulum (Safari → Paylaş → Ana Ekrana Ekle)
+  - yedek alma hatırlatması
+- `git add README.md` ve commit hazırla.
+- **Push'u kullanıcı yapacak.** Komutu (`git push`) kullanıcıya göster, kendin push etme.
+- `PROJE_NOTLARI.md` içindeki "Bekleyen: README" satırını güncelle.
+
+#### 13. Ücret geçmişi (zamlar geçmişi bozmasın)
+
+Sorun: Şu an toplam ücret, o anki tek saatlik ücretle hesaplanıyor. Ücret değişince geçmiş ayların kazancı da değişiyor.
+
+- **Veri:** `Settings.hourlyRate: number` yerine şu alanı kullan:
+  `rates: { from: 'YYYY-MM-DD'; rate: number }[]` (tarihe göre sıralı)
+- **Geçiş:** Eski `hourlyRate > 0` ise `rates = [{ from: '2000-01-01', rate: hourlyRate }]` olsun. Böylece mevcut tüm kayıtlar aynı ücretle kalır.
+- **Hesap:** Her mesai günü, o tarihte geçerli ücretle hesaplanır. Geçerli ücret, `from <= tarih` olan en son kayıttır.
+  - `lib/summary.ts` toplam ücreti gün gün toplasın.
+  - Kart çarpma işlemi (`saat × ücret`) yapmasın.
+  - Hesap mantığını ayrı, saf fonksiyonlar halinde yaz (`lib/rates.ts`).
+- **Özet kartı:**
+  - "Saatlik ücret" satırı, seçili ayda geçerli ücreti gösterir.
+  - Ay içinde ücret değiştiyse altında küçük bir not çıkar: "Bu ay 2 farklı ücret".
+- **Ücret değiştirme:** Kalem ikonuyla yeni ücret girilince küçük bir seçim çıksın:
+  - **"Bu aydan itibaren"** (varsayılan, seçili ayın 1'i)
+  - **"Tarih seç"**
+- **Ayarlar → Ücret geçmişi:** Listeyi göster, ekle, düzenle, sil. Örnek satır: `1 Ocak 2026'dan itibaren · 250,00 ₺`
+  - **Gizlilik kuralı burada da geçerli:** Liste gizli başlar ve göz ikonuyla açılır. Arka plandan dönünce yeniden gizlenir.
+- **Yedek:**
+  - `version: 2` yedeğe `rates` girer.
+  - `version: 1` yedek geri yüklenirken `hourlyRate`, yukarıdaki geçişle `rates`'e çevrilir.
+
+#### 14. Yedek hatırlatıcısı
+
+- **Veri:** `Settings`'e iki alan ekle:
+  - `lastBackupAt?: string` (ISO tarih)
+  - `backupSnoozeUntil?: string`
+  - Bu ikisi yedek dosyasına **yazılmaz**. Geri yükleme de bu alanları değiştirmez.
+- Yedekleme başarılı olunca (`shared` ya da `downloaded`) `lastBackupAt` güncellenir. `cancelled` olursa güncellenmez.
+- **Ayarlar:** Yedekle butonunun altında durum yazısı gösterilir: "Son yedek: 12 gün önce" ya da "Henüz yedek alınmadı".
+- **Hatırlatma kartı:** Özet kartının altında, ince ve sade bir uyarı.
+  - Şu durumlarda görünür:
+    - son yedek `BACKUP_REMIND_DAYS` (config, varsayılan **30**) günden eskiyse, ya da
+    - hiç yedek yoksa ve ilk kayıt 7 günden eskiyse.
+  - Yazı: "Son yedeğin 34 gün önce" + **[Yedekle]** butonu (doğrudan yedekler) + **[Sonra]** butonu.
+  - "Sonra" uyarıyı `BACKUP_SNOOZE_DAYS` (varsayılan **7**) gün gizler.
+
+#### 15. İstatistik ekranı
+
+- Başlığa yeni bir ikon ekle (`BarChart3`). Dokununca tam yükseklikte bir bottom sheet açılır.
+- Üstte yıl seçici: `‹ 2026 ›`
+- **Aylık saat grafiği:** 12 ay için çubuk grafik.
+  - **Ek paket kullanma.** Grafiği SVG ile elle çiz.
+  - Renk `--accent`.
+  - Çubuğa dokununca o ayın değeri gösterilsin. İkinci dokunuşta paneli kapatıp takvimi o aya götürsün.
+- **Özet kutucukları:**
+  - yıllık toplam saat
+  - aylık ortalama
+  - en çok mesai yapılan ay
+  - toplam izin günü (tür kırılımıyla, adım 16'dan sonra)
+- **Yıllık toplam kazanç:** Adım 13'teki hesapla, gün gün hesaplanır. Bu alan da **gizli başlar**, aynı göz ikonu kuralı geçerli.
+- Veri olmayan yıl için sade bir boş durum göster: "Bu yıl için kayıt yok".
+
+#### 16. İzin türleri ve yıllık izin hakkı
+
+**Başlamadan kullanıcıya sor:**
+1. Yıllık izin hakkı hangi döneme göre sayılsın? **Takvim yılı** (1 Ocak) mı, **işe giriş tarihi yıldönümü** mü?
+2. Yıllık kaç gün hakkı var?
+3. Önceki yıldan devreden gün olsun mu?
+
+- **Veri:** `DayEntry`'ye `leaveType?: 'genel' | 'yillik' | 'rapor' | 'mazeret'` alanını ekle.
+  - Türü olmayan eski izin kayıtları **`genel`** sayılır. `genel` haftalık ya da normal izin demektir.
+- **Gün paneli:** "İzin" seçiliyken tür çipleri görünür: Genel · Yıllık · Rapor · Mazeret. Varsayılan Genel.
+- **Takvim:** Tüm izinler `--leave` renginde kalır. Hücre etiketi türü gösterir: İzin / Yıllık / Rapor / Mazeret.
+  - Etiket sığmazsa kısalt: Yıl. / Rap. / Maz.
+- **Ayarlar:** "Yıllık izin hakkı (gün)" alanı ekle. Kullanıcının cevaplarına göre dönem başlangıcı ve devreden gün alanlarını da ekle.
+- **Özet kartı:** "X gün izin" çipinin yanında bir çip daha göster: "Yıllık izin: 9 / 14 kaldı". Bu bilgi para değil, gizlenmez.
+- **Uyarı:** Hak aşılırsa engelleme. Sadece nazik bir uyarı göster: "Yıllık izin hakkını 2 gün aştın".
+- **Yedek:** `leaveType` ve yeni ayarlar yedeğe girer. Eski yedekte bu alanlar yoksa `genel` / varsayılan değerler kullanılır.
+
+#### 17. Çoklu gün seçimi
+
+- Takvim başlığına **"Seç"** butonu ekle. Dokununca seçim modu açılır.
+  - Günlere dokunarak seç ya da seçimi kaldır. Seçili günler belirgin bir çerçeveyle görünür.
+  - Seçim modunda swipe ile ay değiştirme kapalıdır, aylar oklarla geçilir. Aylar arası seçim korunur.
+  - Mümkünse: bir güne uzun basıp sürükleyerek aralık seçme. Swipe ile çakışıyorsa bu özelliği atla ve kullanıcıya söyle.
+- Altta sabit bir bar görünür: "5 gün seçildi" + **[İşaretle]** + **[Vazgeç]**
+- **[İşaretle]** gün paneline benzeyen bir panel açar:
+  - **Mesai** (saat çarkı) ya da **İzin** (tür çipleri). Seçim tüm günlere uygulanır.
+  - Ayrıca **Temizle** seçeneği bulunur.
+- Seçilen günlerde mevcut kayıt varsa onay iste: "3 günde zaten kayıt var. Üzerine yazılsın mı?"
+- Yıllık izin hakkı aşılacaksa adım 16'daki uyarı burada da gösterilir.
+- Kayıtları tek seferde yaz: `setMany`, tek bir state güncellemesi, tek ses.
+
+#### 18. Küçük dokunuşlar
+
+- **Notlu günler:** Notu olan günlerde, hücrenin alt köşesinde küçük bir nokta görünür.
+- **Bugün butonu:** Takvim bugünün ayında değilse ay başlığının yanında küçük bir "Bugün" butonu çıkar. Dokununca bugünün ayına döner.
+- **Ay raporunu paylaş:**
+  - Özet kartında bir paylaş ikonu olur. Seçili ayın özetiyle bir **PNG** oluşturulur:
+    - ay adı
+    - toplam saat
+    - izin günleri
+    - mesai yapılan günlerin listesi
+  - PNG'yi **canvas ile, ek paket kullanmadan** üret. Paylaşım menüsüyle gönder (`navigator.share`). Paylaşım olmazsa dosyayı indir.
+  - Paylaşmadan önce sor: **"Ücret bilgisi eklensin mi?"** Varsayılan **hayır**.
+- **Kayıt hatası bildirimi:** `useEntries` içinde IndexedDB yazımı başarısız olursa ekran eski haline dönsün. Kısa bir uyarı göster: "Kaydedilemedi, tekrar dene". Şu an hata sessizce yutuluyor.
+
+---
+
+### Her adımda
+
 - `npm run build` hatasız tamamlanmalı.
 - Kullanıcıya `npm run dev -- --host` ile aynı Wi-Fi ağındaki telefondan nasıl test edeceğini hatırlat.
+- Değişen yapıyı, yeni ayarları ve yeni kararları `PROJE_NOTLARI.md`'ye işle. Özellikle "Veri modeli", "Yedek dosyası" ve "Şunu yapmak için nereye bakılır" bölümlerini güncelle.
+- Adım bitince commit hazırla ve mesajı Türkçe ve kısa yaz. **Push'u kullanıcı onaylamadan yapma.** Push, canlıya yayın demektir.
+- Bu dosyanın en üstündeki **Durum** satırını güncelle: hangi adımın bittiği ve sıradaki adım.
 
 ---
 
@@ -151,3 +290,15 @@ Her adımda:
 - [ ] Açık ve koyu tema düzgün çalışır.
 - [ ] Ana ekrana eklendikten sonra internet olmadan açılır ve çalışır.
 - [ ] Yedekle/geri yükle ile veriler kaybolmadan taşınabilir.
+
+**Yeni adımlar için:**
+- [x] Kodda ve yorumlarda eski "0,5 adımlı" ifadesi kalmadı.
+- [ ] README repoda ve güncel.
+- [ ] Ücret değiştirildiğinde geçmiş ayların toplam ücreti değişmez.
+- [ ] Eski (`version: 1`) bir yedek, yeni sürümde sorunsuz geri yüklenir.
+- [ ] Güncellemeden sonra mevcut kayıtlar ve ücret olduğu gibi durur.
+- [ ] 30 günden eski yedekte hatırlatma çıkar. "Sonra" denince 7 gün görünmez.
+- [ ] İstatistik ekranında yıllık grafik ve toplamlar doğru. Kazanç gizli başlar.
+- [ ] İzin türü seçilebilir. Yıllık izin kalan günü doğru sayılır.
+- [ ] Birden fazla gün tek seferde mesai ya da izin olarak işaretlenebilir.
+- [ ] Notlu günlerde nokta görünür, "Bugün" butonu çalışır, ay raporu paylaşılabilir. Ücret, paylaşılan rapora varsayılan olarak eklenmez.

@@ -3,7 +3,7 @@ export type EntryType = 'mesai' | 'izin';
 export type DayEntry = {
   date: string; // 'YYYY-MM-DD'
   type: EntryType;
-  hours?: number; // sadece 'mesai' için, 0.5 adımlı
+  hours?: number; // sadece 'mesai' için, tam saat (1–24)
   note?: string;
 };
 
