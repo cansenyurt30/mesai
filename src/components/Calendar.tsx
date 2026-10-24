@@ -138,8 +138,8 @@ export default function Calendar({
         >
           Bugün
         </PillButton>
-        <PillButton label="Diğer aya geç" onClick={() => go(1)} icon="right">
-          Diğer ay
+        <PillButton label="Sonraki aya geç" onClick={() => go(1)} icon="right">
+          İleri
         </PillButton>
       </div>
     </section>
@@ -147,7 +147,7 @@ export default function Calendar({
 }
 
 /**
- * Takvimin altındaki küçük hızlı gezinme hapı (Geri · Bugün · Diğer ay).
+ * Takvimin altındaki küçük hızlı gezinme hapı (Geri · Bugün · İleri).
  * `emphasized` ise canlı renkte (ve bir kez hafifçe zıplayarak) dokunmaya çağırır.
  * Dokunma alanı 44 px yüksekliğinde; görünen hap daha ince.
  */
