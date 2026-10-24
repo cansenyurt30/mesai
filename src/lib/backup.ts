@@ -4,12 +4,15 @@ import { isPaletteId } from './palettes';
 import { DEFAULT_SETTINGS } from '../types';
 import type { DayEntry, Settings, ThemeMode } from '../types';
 
+/** Yedeğe giren ayarlar. Yedek hatırlatıcısı alanları (lastBackupAt vb.) bilerek dışarıda. */
+export type BackupSettings = Pick<Settings, 'hourlyRate' | 'theme' | 'sound' | 'palette'>;
+
 export type Backup = {
   app: 'mesai';
   version: 1;
   exportedAt: string;
   entries: DayEntry[];
-  settings: Settings;
+  settings: BackupSettings;
 };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -17,12 +20,13 @@ const THEMES: ThemeMode[] = ['light', 'dark', 'system'];
 
 export function createBackup(entries: DayEntry[], settings: Settings): Backup {
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const { hourlyRate, theme, sound, palette } = settings;
   return {
     app: 'mesai',
     version: 1,
     exportedAt: new Date().toISOString(),
     entries: sorted,
-    settings,
+    settings: { hourlyRate, theme, sound, palette },
   };
 }
 
@@ -73,7 +77,7 @@ export function parseBackup(text: string): Backup {
   const byDate = new Map(entries.map((e) => [e.date, e]));
 
   const raw = isObject(data.settings) ? data.settings : {};
-  const settings: Settings = {
+  const settings: BackupSettings = {
     hourlyRate:
       typeof raw.hourlyRate === 'number' && raw.hourlyRate >= 0
         ? raw.hourlyRate

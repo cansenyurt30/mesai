@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { startOfMonth } from 'date-fns';
 import { Palette, Settings as SettingsIcon } from 'lucide-react';
+import BackupReminder from './components/BackupReminder';
 import Calendar from './components/Calendar';
 import DaySheet from './components/DaySheet';
 import PaletteSheet from './components/PaletteSheet';
@@ -10,13 +11,22 @@ import SummaryCard from './components/SummaryCard';
 import { useEntries } from './hooks/useEntries';
 import { useSettings } from './hooks/useSettings';
 import { useTheme } from './hooks/useTheme';
+import { createBackup, saveBackupFile } from './lib/backup';
+import { getBackupReminder, snoozeUntil } from './lib/backupReminder';
 import { requestPersistentStorage } from './lib/db';
 import { toDateKey } from './lib/dates';
 import { setSoundEnabled } from './lib/sound';
 import type { Backup } from './lib/backup';
 
 export default function App() {
-  const { entries, saveEntry, removeEntry, replaceAll, clearAll } = useEntries();
+  const {
+    entries,
+    loaded: entriesLoaded,
+    saveEntry,
+    removeEntry,
+    replaceAll,
+    clearAll,
+  } = useEntries();
   const { settings, loaded: settingsLoaded, updateSettings, resetSettings } = useSettings();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -32,6 +42,26 @@ export default function App() {
   useEffect(() => {
     void requestPersistentStorage();
   }, []);
+
+  // Kayıtlarda giriş zamanı yok; yedek hatırlatması için ilk kaydın görüldüğü anı bir kez sakla.
+  // (Güncellemeden önce de kaydı olan kullanıcıda sayaç ilk açılışta başlar.)
+  useEffect(() => {
+    if (!settingsLoaded || !entriesLoaded || settings.firstSavedAt) return;
+    if (Object.keys(entries).length > 0) {
+      void updateSettings({ firstSavedAt: new Date().toISOString() });
+    }
+  }, [settingsLoaded, entriesLoaded, settings.firstSavedAt, entries, updateSettings]);
+
+  // Paylaşım menüsü dokunuş anında açılmalı; bu yüzden ilk iş yedeği kaydetmek.
+  const runBackup = useCallback(async () => {
+    const result = await saveBackupFile(createBackup(Object.values(entries), settings));
+    if (result !== 'cancelled') {
+      await updateSettings({ lastBackupAt: new Date().toISOString() });
+    }
+    return result;
+  }, [entries, settings, updateSettings]);
+
+  const backupMessage = getBackupReminder(settings, Object.keys(entries).length > 0);
 
   const closeSheet = useCallback(() => setSelectedDay(null), []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
@@ -97,6 +127,11 @@ export default function App() {
             hourlyRate={settings.hourlyRate}
             onRateChange={(rate) => void updateSettings({ hourlyRate: rate })}
           />
+          <BackupReminder
+            message={backupMessage}
+            onBackup={() => void runBackup()}
+            onSnooze={() => void updateSettings({ backupSnoozeUntil: snoozeUntil() })}
+          />
         </motion.div>
         <motion.div {...enter(0.15)}>
           <Calendar
@@ -125,10 +160,10 @@ export default function App() {
 
       <SettingsSheet
         open={settingsOpen}
-        entries={entries}
         settings={settings}
         onThemeChange={(theme) => void updateSettings({ theme })}
         onSoundChange={(sound) => void updateSettings({ sound })}
+        onBackup={runBackup}
         onRestore={restore}
         onDeleteAll={deleteAll}
         onClose={closeSettings}

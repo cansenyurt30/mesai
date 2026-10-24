@@ -3,18 +3,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Download, Trash2, Upload, Volume2, VolumeX } from 'lucide-react';
 import BottomSheet from './BottomSheet';
 import Segmented from './Segmented';
-import { createBackup, parseBackup, saveBackupFile } from '../lib/backup';
+import { parseBackup } from '../lib/backup';
+import { formatLastBackup } from '../lib/backupReminder';
 import { playSuccess, setSoundEnabled } from '../lib/sound';
-import type { Backup } from '../lib/backup';
-import type { EntryMap } from '../hooks/useEntries';
+import type { Backup, SaveResult } from '../lib/backup';
 import type { Settings, ThemeMode } from '../types';
 
 type Props = {
   open: boolean;
-  entries: EntryMap;
   settings: Settings;
   onThemeChange: (theme: ThemeMode) => void;
   onSoundChange: (enabled: boolean) => void;
+  onBackup: () => Promise<SaveResult>;
   onRestore: (backup: Backup) => Promise<void>;
   onDeleteAll: () => Promise<void>;
   onClose: () => void;
@@ -36,10 +36,10 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
 const DANGER = '#dc2626';
 
 function SettingsContent({
-  entries,
   settings,
   onThemeChange,
   onSoundChange,
+  onBackup,
   onRestore,
   onDeleteAll,
   onClose,
@@ -51,7 +51,7 @@ function SettingsContent({
 
   const handleBackup = async () => {
     setMessage(null);
-    const result = await saveBackupFile(createBackup(Object.values(entries), settings));
+    const result = await onBackup();
     if (result === 'downloaded') setMessage({ ok: true, text: 'Yedek dosyası indirildi.' });
     if (result === 'shared') setMessage({ ok: true, text: 'Yedek dosyası paylaşıldı.' });
   };
@@ -134,6 +134,9 @@ function SettingsContent({
         <ActionButton icon={<Download size={20} />} onClick={handleBackup}>
           Yedekle
         </ActionButton>
+        <p className="px-4 pb-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+          {formatLastBackup(settings.lastBackupAt)}
+        </p>
         <ActionButton icon={<Upload size={20} />} onClick={() => fileInput.current?.click()}>
           Geri yükle
         </ActionButton>

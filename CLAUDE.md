@@ -125,8 +125,8 @@ type Settings = {
 
 ## Geliştirme Adımları
 
-> **Durum:** Adım 1–12 tamamlandı; 1–10 canlıda (https://cansenyurt30.github.io/mesai/), 11–12 push bekliyor (yorum düzeltmesi ve README).
-> **Sıradaki adım: 13.** Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
+> **Durum:** Adım 1–12 ve 14 tamamlandı; 13 bilerek ertelendi. 1–12 canlıda (https://cansenyurt30.github.io/mesai/); 14 push bekliyor.
+> **Sıradaki adım:** 18 (sonra 16 → 17 → 15; 13 daha sonra). Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
 
 ### Tamamlananlar (1–12)
 
@@ -297,7 +297,7 @@ Sorun: Şu an toplam ücret, o anki tek saatlik ücretle hesaplanıyor. Ücret d
 - [ ] Ücret değiştirildiğinde geçmiş ayların toplam ücreti değişmez.
 - [ ] Eski (`version: 1`) bir yedek, yeni sürümde sorunsuz geri yüklenir.
 - [ ] Güncellemeden sonra mevcut kayıtlar ve ücret olduğu gibi durur.
-- [ ] 30 günden eski yedekte hatırlatma çıkar. "Sonra" denince 7 gün görünmez.
+- [x] 30 günden eski yedekte hatırlatma çıkar. "Sonra" denince 7 gün görünmez.
 - [ ] İstatistik ekranında yıllık grafik ve toplamlar doğru. Kazanç gizli başlar.
 - [ ] İzin türü seçilebilir. Yıllık izin kalan günü doğru sayılır.
 - [ ] Birden fazla gün tek seferde mesai ya da izin olarak işaretlenebilir.
