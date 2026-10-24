@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="0.55" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#d946ef"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.2" cy="0.1" r="0.8">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Tam kare zemin: iOS köşeleri kendisi yuvarlar, maskable için de güvenli -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <!-- Saat: merkezde, kenarlardan %20 güvenli alan bırakılmış -->
+  <circle cx="256" cy="256" r="136" fill="none" stroke="#ffffff" stroke-width="28"/>
+  <g stroke="#ffffff" stroke-width="22" stroke-linecap="round" fill="none">
+    <path d="M256 176 V256"/>
+    <path d="M256 256 L312 292"/>
+  </g>
+  <circle cx="256" cy="256" r="14" fill="#ffffff"/>
+  <!-- 12 ve 6 işaretleri -->
+  <g stroke="#ffffff" stroke-opacity="0.75" stroke-width="12" stroke-linecap="round">
+    <path d="M256 138 V150"/>
+    <path d="M256 362 V374"/>
+    <path d="M138 256 H150"/>
+    <path d="M362 256 H374"/>
+  </g>
+</svg>

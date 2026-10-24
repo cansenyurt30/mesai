@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+/* Tema: .dark sınıfı <html> üzerine eklenir (Adım 6'da bağlanacak) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tüm `transition-*` sınıfları için yumuşak, hızlı başlayıp yavaş duran geçiş */
+@theme {
+  --default-transition-duration: 280ms;
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  --bg: #f4f5fb;
+  --surface: #ffffff;
+  --text: #1b1b2f;
+  --text-muted: #6b6f85;
+  --accent: #4f46e5;
+  --leave: #0d9488;
+  --on-fill: #ffffff;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --bg: #0e0f1a;
+  --surface: #1a1b2b;
+  --text: #f1f2fa;
+  --text-muted: #9a9db5;
+  --accent: #818cf8;
+  --leave: #2dd4bf;
+  --on-fill: #0e0f1a;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  /* Uygulama gibi hissettirir: çekince yenileme/zıplama ve uzun basma menüsü yok */
+  overscroll-behavior-y: none;
+  -webkit-touch-callout: none;
+}
+
+button,
+.select-none {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* iOS'ta yanlışlıkla zoom olmaması için input font-size >= 16px */
+input,
+textarea,
+select {
+  font-size: 16px;
+}
