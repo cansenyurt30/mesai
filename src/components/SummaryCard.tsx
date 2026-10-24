@@ -60,12 +60,13 @@ export default function SummaryCard({ month, entries, hourlyRate, onRateChange }
 
   return (
     <section
-      className="relative overflow-clip rounded-3xl p-5 text-white shadow-lg bg-linear-to-br from-indigo-500 via-violet-500 to-fuchsia-500 dark:from-indigo-700 dark:via-violet-800 dark:to-purple-900"
+      className="relative overflow-clip rounded-3xl p-5 text-white shadow-lg"
+      style={{ background: 'linear-gradient(135deg, var(--g1), var(--g2), var(--g3))' }}
       aria-label="Aylık özet"
     >
       {/* Dekoratif ışık lekeleri */}
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-12 -left-8 h-36 w-36 rounded-full bg-fuchsia-300/20 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-12 -left-8 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
 
       <div className="relative flex items-start justify-between">
         <div>
@@ -192,7 +193,15 @@ function CountUp({ value }: { value: number }) {
         setText(formatHoursLong(value));
       },
     });
-    return () => controls.stop();
+    // Animasyon kareleri durursa (arka plan, düşük güç modu) sayı yine de doğru görünsün.
+    const fallback = setTimeout(() => {
+      shown.current = value;
+      setText(formatHoursLong(value));
+    }, 1200);
+    return () => {
+      controls.stop();
+      clearTimeout(fallback);
+    };
   }, [value, reduce]);
 
   return <>{text}</>;

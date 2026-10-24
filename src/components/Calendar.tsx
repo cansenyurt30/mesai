@@ -186,7 +186,7 @@ const MonthGrid = forwardRef<HTMLDivElement, GridProps>(function MonthGrid(
       className="w-full"
     >
       {/* Sürüklerken solar; giriş/çıkış opaklığı dıştaki katmanda */}
-      <motion.div style={{ opacity: dragOpacity }} className="grid grid-cols-7 gap-y-1">
+      <motion.div style={{ opacity: dragOpacity }} className="grid grid-cols-7">
         {weeks.flat().map((day, i) =>
           day ? (
             <DayCell
@@ -233,24 +233,32 @@ function DayCell({ day, isToday, entry, onSelect }: DayCellProps) {
       aria-current={isToday ? 'date' : undefined}
       whileTap={{ scale: 0.88 }}
       transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-      className="relative mx-auto flex h-12 w-12 flex-col items-center justify-center rounded-2xl leading-none"
+      // Dokunma alanı sütunun tamamı; görünen kutu (aşağıda) kenarlardan 2 px içeride,
+      // böylece dar ekranlarda komşu günler birbirine yapışmaz.
+      className="relative flex h-12 w-full flex-col items-center justify-center leading-none"
       style={{
         color: entry ? 'var(--on-fill)' : 'var(--text)',
-        boxShadow: isToday ? '0 0 0 2px var(--surface), 0 0 0 4px var(--accent)' : undefined,
         fontWeight: isToday ? 700 : 500,
       }}
     >
+      {isToday && (
+        <span
+          aria-hidden
+          className="absolute inset-x-[2px] inset-y-[2px] mx-auto max-w-12 rounded-[14px]"
+          style={{ boxShadow: '0 0 0 1.5px var(--surface), 0 0 0 3.5px var(--accent)' }}
+        />
+      )}
       <AnimatePresence initial={false}>
         {entry && (
           <motion.span
             key={fillKey}
             aria-hidden
-            className="absolute inset-0 rounded-2xl"
+            className="absolute inset-x-[2px] inset-y-[2px] mx-auto max-w-12 rounded-[14px]"
             style={{ background: isLeave ? 'var(--leave)' : 'var(--accent)' }}
-            initial={{ scale: 0.5, opacity: 0 }}
+            initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+            exit={{ scale: 0.85, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
           />
         )}
       </AnimatePresence>

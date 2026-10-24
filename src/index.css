@@ -17,6 +17,10 @@
   --accent: #4f46e5;
   --leave: #0d9488;
   --on-fill: #ffffff;
+  /* Özet kartı gradient'i (palet seçilince lib/palettes.ts bunları değiştirir) */
+  --g1: #6366f1;
+  --g2: #8b5cf6;
+  --g3: #d946ef;
 }
 
 :root.dark {
@@ -28,6 +32,9 @@
   --accent: #818cf8;
   --leave: #2dd4bf;
   --on-fill: #0e0f1a;
+  --g1: #4338ca;
+  --g2: #5b21b6;
+  --g3: #581c87;
 }
 
 html,

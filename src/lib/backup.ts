@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { MAX_HOURS } from './config';
+import { isPaletteId } from './palettes';
 import { DEFAULT_SETTINGS } from '../types';
 import type { DayEntry, Settings, ThemeMode } from '../types';
 
@@ -81,6 +82,7 @@ export function parseBackup(text: string): Backup {
       ? (raw.theme as ThemeMode)
       : DEFAULT_SETTINGS.theme,
     sound: typeof raw.sound === 'boolean' ? raw.sound : DEFAULT_SETTINGS.sound,
+    palette: isPaletteId(raw.palette) ? raw.palette : DEFAULT_SETTINGS.palette,
   };
 
   return {

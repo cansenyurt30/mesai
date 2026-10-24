@@ -20,7 +20,7 @@
 
     <title>Mesai</title>
     <script>
-      // Açılışta tema yanıp sönmesin diye son seçimi sayfa çizilmeden uygula.
+      // Açılışta tema ve renkler yanıp sönmesin diye son seçimi sayfa çizilmeden uygula.
       (function () {
         try {
           var t = localStorage.getItem('mesai-theme');
@@ -32,6 +32,14 @@
             document
               .querySelector('meta[name="theme-color"]')
               .setAttribute('content', '#0e0f1a');
+          }
+          // Son seçilen renk paleti
+          var p = JSON.parse(localStorage.getItem('mesai-palette') || 'null');
+          if (p) {
+            var colors = dark ? p.dark : p.light;
+            for (var k in colors) {
+              document.documentElement.style.setProperty('--' + k, colors[k]);
+            }
           }
         } catch (e) {}
       })();

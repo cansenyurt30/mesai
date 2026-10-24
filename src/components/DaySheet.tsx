@@ -6,7 +6,7 @@ import HourWheel from './HourWheel';
 import Segmented from './Segmented';
 import { AUTO_SAVE, DEFAULT_HOURS } from '../lib/config';
 import { formatDayTitle, toDateKey } from '../lib/dates';
-import { playClear, playSuccess, playTick } from '../lib/sound';
+import { playClear, playSuccess } from '../lib/sound';
 import type { DayEntry, EntryType } from '../types';
 
 type Props = {
@@ -72,10 +72,7 @@ function SheetContent({ date, entry, onSave, onClear, onClose }: ContentProps) {
         label="Kayıt türü"
         options={TYPE_OPTIONS}
         value={type}
-        onChange={(t) => {
-          setType(t);
-          playTick();
-        }}
+        onChange={setType}
       />
 
       <motion.div

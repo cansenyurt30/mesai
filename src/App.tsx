@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { startOfMonth } from 'date-fns';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Palette, Settings as SettingsIcon } from 'lucide-react';
 import Calendar from './components/Calendar';
 import DaySheet from './components/DaySheet';
+import PaletteSheet from './components/PaletteSheet';
 import SettingsSheet from './components/SettingsSheet';
 import SummaryCard from './components/SummaryCard';
 import { useEntries } from './hooks/useEntries';
@@ -20,8 +21,9 @@ export default function App() {
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
-  useTheme(settings.theme, settingsLoaded);
+  useTheme(settings.theme, settings.palette, settingsLoaded);
 
   useEffect(() => {
     setSoundEnabled(settings.sound);
@@ -33,6 +35,7 @@ export default function App() {
 
   const closeSheet = useCallback(() => setSelectedDay(null), []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
+  const closePalette = useCallback(() => setPaletteOpen(false), []);
 
   const restore = useCallback(
     async (backup: Backup) => {
@@ -59,7 +62,20 @@ export default function App() {
         className="flex items-center justify-between py-2"
         {...enter(0)}
       >
-        <h1 className="text-2xl font-bold">Mesai</h1>
+        <div className="flex items-center gap-1">
+          <motion.button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            aria-label="Renk paleti"
+            whileTap={{ scale: 0.85, rotate: -20 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ color: 'var(--accent)' }}
+          >
+            <Palette size={22} />
+          </motion.button>
+          <h1 className="text-2xl font-bold">Mesai</h1>
+        </div>
         <motion.button
           type="button"
           onClick={() => setSettingsOpen(true)}
@@ -98,6 +114,13 @@ export default function App() {
         onSave={saveEntry}
         onClear={removeEntry}
         onClose={closeSheet}
+      />
+
+      <PaletteSheet
+        open={paletteOpen}
+        value={settings.palette}
+        onChange={(palette) => void updateSettings({ palette })}
+        onClose={closePalette}
       />
 
       <SettingsSheet

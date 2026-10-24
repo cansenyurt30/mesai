@@ -1,11 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 import { HOUR_VALUES } from '../lib/config';
-import { playTick } from '../lib/sound';
 
 const ITEM_HEIGHT = 48;
 const VISIBLE_ROWS = 5;
 const SIDE_PADDING = ITEM_HEIGHT * Math.floor(VISIBLE_ROWS / 2);
-const TICK_MIN_GAP_MS = 45;
 
 type Props = {
   value: number;
@@ -33,7 +31,6 @@ const label = (v: number) => String(v).replace('.', ',');
 export default function HourWheel({ value, onChange, onPick }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
   const ready = useRef(false);
-  const lastTick = useRef(0);
   const selected = indexOfValue(value);
 
   // İlk açılışta mevcut değere konumlan; bu sırada oluşan kaydırma olayını yok say.
@@ -54,11 +51,6 @@ export default function HourWheel({ value, onChange, onPick }: Props) {
     if (index === selected) return;
 
     onChange(HOUR_VALUES[index]);
-    const now = performance.now();
-    if (now - lastTick.current > TICK_MIN_GAP_MS) {
-      lastTick.current = now;
-      playTick();
-    }
   };
 
   const scrollToIndex = (index: number) => {

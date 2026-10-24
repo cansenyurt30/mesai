@@ -83,6 +83,8 @@ Panelde iki seçenekli bir sekme (segmented control) bulunur: **Mesai | İzin**
 - **Yedekle:** Tüm verileri `.json` dosyası olarak indirir.
 - **Geri yükle:** Yedek `.json` dosyasını içe aktarır.
 - **Tüm verileri sil:** Onay ister.
+- **Renk paleti:** Başlığın solundaki palet ikonu. 8 hazır palet (`src/lib/palettes.ts`), dokununca anında uygulanır, seçim kaydedilir ve yedeğe girer.
+- **Ses:** Yalnızca kayıt/temizle sırasında çok hafif, ince bir ses. Ayarlardan kapatılabilir.
 
 ---
 

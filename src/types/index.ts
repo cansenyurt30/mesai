@@ -12,11 +12,13 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export type Settings = {
   hourlyRate: number; // ₺
   theme: ThemeMode;
-  sound: boolean; // kayıt ve saat seçimi sesleri
+  sound: boolean; // kayıt sesi
+  palette: string; // renk paleti kimliği (bkz. lib/palettes.ts)
 };
 
 export const DEFAULT_SETTINGS: Settings = {
   hourlyRate: 0,
   theme: 'system',
   sound: true,
+  palette: 'mor',
 };
