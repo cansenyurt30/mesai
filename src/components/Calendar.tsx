@@ -7,7 +7,7 @@ import {
 } from 'framer-motion';
 import type { PanInfo } from 'framer-motion';
 import { addMonths, isSameDay, isSameMonth, startOfMonth, subMonths } from 'date-fns';
-import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   WEEKDAY_LABELS,
   buildMonthGrid,
@@ -116,57 +116,86 @@ export default function Calendar({
         </AnimatePresence>
       </div>
 
-      {/* Alt satır: renk açıklaması solda, "Bugün" butonu sağda */}
-      <div className="mt-2 flex min-h-11 items-center justify-between gap-3 px-2">
-        <div
-          className="flex items-center gap-4 text-xs"
-          style={{ color: 'var(--text-muted)' }}
+      <div
+        className="mt-3 flex items-center justify-center gap-5 text-xs"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        <LegendItem color="var(--accent)" label="Mesai" />
+        <LegendItem color="var(--leave)" label="İzin" />
+      </div>
+
+      {/* Hızlı gezinme: önceki ay · bugün · diğer ay */}
+      <div className="mt-1 grid grid-cols-3 gap-2">
+        <PillButton label="Önceki aya dön" onClick={() => go(-1)} icon="left">
+          Geri
+        </PillButton>
+        <PillButton
+          label="Bugünün ayına dön"
+          onClick={goToday}
+          emphasized={!isThisMonth}
+          disabled={isThisMonth}
         >
-          <LegendItem color="var(--accent)" label="Mesai" />
-          <LegendItem color="var(--leave)" label="İzin" />
-        </div>
-        <TodayButton active={!isThisMonth} onClick={goToday} />
+          Bugün
+        </PillButton>
+        <PillButton label="Diğer aya geç" onClick={() => go(1)} icon="right">
+          Diğer ay
+        </PillButton>
       </div>
     </section>
   );
 }
 
 /**
- * Küçük "Bugün" hapı. Başka bir aydayken canlı renkte (ve bir kez hafifçe zıplayarak)
- * dokunmaya çağırır; zaten bu aydaysak sönük kalır. Dokunma alanı 44 px yüksekliğinde.
+ * Takvimin altındaki küçük hızlı gezinme hapı (Geri · Bugün · Diğer ay).
+ * `emphasized` ise canlı renkte (ve bir kez hafifçe zıplayarak) dokunmaya çağırır.
+ * Dokunma alanı 44 px yüksekliğinde; görünen hap daha ince.
  */
-function TodayButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+function PillButton({
+  label,
+  onClick,
+  icon,
+  emphasized = false,
+  disabled = false,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  icon?: 'left' | 'right';
+  emphasized?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
-      disabled={!active}
-      aria-label="Bugünün ayına dön"
-      whileTap={active ? { scale: 0.9 } : undefined}
+      disabled={disabled}
+      aria-label={label}
+      whileTap={disabled ? undefined : { scale: 0.93 }}
       transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-      className="-my-1 flex h-11 items-center px-1"
+      className="flex h-11 items-center justify-center"
     >
       <motion.span
-        key={active ? 'on' : 'off'}
-        className="flex items-center gap-1.5 rounded-full py-1.5 pl-2.5 pr-3 text-xs font-semibold"
-        initial={active ? { scale: 0.8, opacity: 0.4 } : false}
+        key={emphasized ? 'on' : 'off'}
+        className="flex items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold"
+        initial={emphasized ? { scale: 0.85, opacity: 0.5 } : false}
         animate={{
           scale: 1,
-          opacity: active ? 1 : 0.5,
-          backgroundColor: active
+          opacity: disabled ? 0.5 : 1,
+          backgroundColor: emphasized
             ? 'color-mix(in srgb, var(--accent) 18%, transparent)'
             : 'color-mix(in srgb, var(--text-muted) 12%, transparent)',
-          color: active ? 'var(--accent)' : 'var(--text-muted)',
+          color: emphasized ? 'var(--accent)' : 'var(--text-muted)',
         }}
         transition={{ type: 'spring', stiffness: 380, damping: 18 }}
       >
-        <CalendarCheck size={14} strokeWidth={2.4} />
-        Bugün
+        {icon === 'left' && <ChevronLeft size={14} strokeWidth={2.6} />}
+        {children}
+        {icon === 'right' && <ChevronRight size={14} strokeWidth={2.6} />}
       </motion.span>
     </motion.button>
   );
 }
-
 function NavButton({
   label,
   onClick,
