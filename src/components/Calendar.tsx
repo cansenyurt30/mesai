@@ -7,7 +7,7 @@ import {
 } from 'framer-motion';
 import type { PanInfo } from 'framer-motion';
 import { addMonths, isSameDay, isSameMonth, startOfMonth, subMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   WEEKDAY_LABELS,
   buildMonthGrid,
@@ -49,10 +49,11 @@ export default function Calendar({
     onMonthChange(dir === 1 ? addMonths(month, 1) : subMonths(month, 1));
   };
 
-  // Başka bir aydaysak "Bugün" butonu bugünün ayına döndürür.
+  // "Bugün" butonu, başka bir aydaysak bugünün ayına döndürür.
   const thisMonth = startOfMonth(new Date());
-  const showToday = !isSameMonth(month, thisMonth);
+  const isThisMonth = isSameMonth(month, thisMonth);
   const goToday = () => {
+    if (isThisMonth) return;
     setDirection(thisMonth > month ? 1 : -1);
     onMonthChange(thisMonth);
   };
@@ -68,52 +69,20 @@ export default function Calendar({
           <ChevronLeft size={22} />
         </NavButton>
 
-        <div className="relative h-11 flex-1 overflow-hidden text-center">
-          {/* "Bugün" görünürken başlık, çakışmasın diye biraz sola kayar */}
-          <div
-            className="absolute inset-0 transition-[padding]"
-            style={{ paddingRight: showToday ? 52 : 0 }}
-          >
-            <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-              <motion.h2
-                key={toDateKey(month)}
-                custom={direction}
-                variants={monthVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.3, ease: EASE }}
-                className="absolute inset-0 flex items-center justify-center text-lg font-semibold"
-                style={{ paddingRight: 'inherit' }}
-              >
-                {formatMonthTitle(month)}
-              </motion.h2>
-            </AnimatePresence>
-          </div>
-
-          <AnimatePresence>
-            {showToday && (
-              <motion.button
-                type="button"
-                onClick={goToday}
-                aria-label="Bugünün ayına dön"
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-0 top-0 flex h-11 items-center px-0.5"
-              >
-                <span
-                  className="rounded-full px-2.5 py-1 text-xs font-semibold"
-                  style={{
-                    background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
-                    color: 'var(--accent)',
-                  }}
-                >
-                  Bugün
-                </span>
-              </motion.button>
-            )}
+        <div className="relative h-7 flex-1 overflow-hidden text-center">
+          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+            <motion.h2
+              key={toDateKey(month)}
+              custom={direction}
+              variants={monthVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: EASE }}
+              className="absolute inset-x-0 text-lg font-semibold leading-7"
+            >
+              {formatMonthTitle(month)}
+            </motion.h2>
           </AnimatePresence>
         </div>
 
@@ -147,14 +116,54 @@ export default function Calendar({
         </AnimatePresence>
       </div>
 
-      <div
-        className="mt-3 flex items-center justify-center gap-5 text-xs"
-        style={{ color: 'var(--text-muted)' }}
-      >
-        <LegendItem color="var(--accent)" label="Mesai" />
-        <LegendItem color="var(--leave)" label="İzin" />
+      {/* Alt satır: renk açıklaması solda, "Bugün" butonu sağda */}
+      <div className="mt-2 flex min-h-11 items-center justify-between gap-3 px-2">
+        <div
+          className="flex items-center gap-4 text-xs"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <LegendItem color="var(--accent)" label="Mesai" />
+          <LegendItem color="var(--leave)" label="İzin" />
+        </div>
+        <TodayButton active={!isThisMonth} onClick={goToday} />
       </div>
     </section>
+  );
+}
+
+/**
+ * Küçük "Bugün" hapı. Başka bir aydayken canlı renkte (ve bir kez hafifçe zıplayarak)
+ * dokunmaya çağırır; zaten bu aydaysak sönük kalır. Dokunma alanı 44 px yüksekliğinde.
+ */
+function TodayButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      disabled={!active}
+      aria-label="Bugünün ayına dön"
+      whileTap={active ? { scale: 0.9 } : undefined}
+      transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+      className="-my-1 flex h-11 items-center px-1"
+    >
+      <motion.span
+        key={active ? 'on' : 'off'}
+        className="flex items-center gap-1.5 rounded-full py-1.5 pl-2.5 pr-3 text-xs font-semibold"
+        initial={active ? { scale: 0.8, opacity: 0.4 } : false}
+        animate={{
+          scale: 1,
+          opacity: active ? 1 : 0.5,
+          backgroundColor: active
+            ? 'color-mix(in srgb, var(--accent) 18%, transparent)'
+            : 'color-mix(in srgb, var(--text-muted) 12%, transparent)',
+          color: active ? 'var(--accent)' : 'var(--text-muted)',
+        }}
+        transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+      >
+        <CalendarCheck size={14} strokeWidth={2.4} />
+        Bugün
+      </motion.span>
+    </motion.button>
   );
 }
 
