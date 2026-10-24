@@ -1,13 +1,18 @@
 import { format } from 'date-fns';
 import { MAX_HOURS } from './config';
+import { isLeaveType } from './leave';
 import { isPaletteId } from './palettes';
 import { shareOrDownload } from './shareFile';
 import type { SaveResult } from './shareFile';
 import { DEFAULT_SETTINGS } from '../types';
 import type { DayEntry, Settings, ThemeMode } from '../types';
 
-/** Yedeğe giren ayarlar. Yedek hatırlatıcısı alanları (lastBackupAt vb.) bilerek dışarıda. */
-export type BackupSettings = Pick<Settings, 'hourlyRate' | 'theme' | 'sound' | 'palette'>;
+/**
+ * Yedeğe giren ayarlar. Yedek hatırlatıcısı alanları (lastBackupAt vb.) bilerek dışarıda.
+ * Yıllık izin alanları sonradan eklendi: eski yedekte yoksa geri yüklemede mevcut değerler korunur.
+ */
+export type BackupSettings = Pick<Settings, 'hourlyRate' | 'theme' | 'sound' | 'palette'> &
+  Partial<Pick<Settings, 'annualLeaveDays' | 'hireDate' | 'leaveCarryOver'>>;
 
 export type Backup = {
   app: 'mesai';
@@ -22,26 +27,43 @@ const THEMES: ThemeMode[] = ['light', 'dark', 'system'];
 
 export function createBackup(entries: DayEntry[], settings: Settings): Backup {
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
-  const { hourlyRate, theme, sound, palette } = settings;
+  const { hourlyRate, theme, sound, palette, annualLeaveDays, hireDate, leaveCarryOver } = settings;
   return {
     app: 'mesai',
     version: 1,
     exportedAt: new Date().toISOString(),
     entries: sorted,
-    settings: { hourlyRate, theme, sound, palette },
+    settings: {
+      hourlyRate,
+      theme,
+      sound,
+      palette,
+      annualLeaveDays,
+      leaveCarryOver,
+      ...(hireDate ? { hireDate } : {}),
+    },
   };
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
+/** Gün sayısı ayarı: 0–366 arası tam sayı. */
+const isDayCount = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 366;
+
 function parseEntry(raw: unknown): DayEntry {
   if (!isObject(raw)) throw new Error('Geçersiz kayıt');
-  const { date, type, hours, note } = raw;
+  const { date, type, hours, note, leaveType } = raw;
 
   if (typeof date !== 'string' || !DATE_RE.test(date)) throw new Error('Geçersiz tarih');
 
-  if (type === 'izin') return { date, type };
+  if (type === 'izin') {
+    // Türü olmayan (eski) izin kayıtları 'genel' sayılır; 'genel' için alan yazılmaz.
+    return isLeaveType(leaveType) && leaveType !== 'genel'
+      ? { date, type, leaveType }
+      : { date, type };
+  }
 
   if (type === 'mesai') {
     if (typeof hours !== 'number' || !(hours > 0) || hours > MAX_HOURS) {
@@ -90,6 +112,12 @@ export function parseBackup(text: string): Backup {
     sound: typeof raw.sound === 'boolean' ? raw.sound : DEFAULT_SETTINGS.sound,
     palette: isPaletteId(raw.palette) ? raw.palette : DEFAULT_SETTINGS.palette,
   };
+  // Yıllık izin ayarları: yalnızca yedekte geçerli olarak varsa alınır (yoksa mevcutlar korunur).
+  if (isDayCount(raw.annualLeaveDays)) settings.annualLeaveDays = raw.annualLeaveDays;
+  if (isDayCount(raw.leaveCarryOver)) settings.leaveCarryOver = raw.leaveCarryOver;
+  if (typeof raw.hireDate === 'string' && DATE_RE.test(raw.hireDate)) {
+    settings.hireDate = raw.hireDate;
+  }
 
   return {
     app: 'mesai',

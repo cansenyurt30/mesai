@@ -17,6 +17,7 @@ import { useToast } from './hooks/useToast';
 import { createBackup, saveBackupFile } from './lib/backup';
 import { getBackupReminder, snoozeUntil } from './lib/backupReminder';
 import { requestPersistentStorage } from './lib/db';
+import { leaveBalance } from './lib/leave';
 import { toDateKey } from './lib/dates';
 import { setSoundEnabled } from './lib/sound';
 import type { Backup } from './lib/backup';
@@ -67,6 +68,9 @@ export default function App() {
   }, [entries, settings, updateSettings]);
 
   const backupMessage = getBackupReminder(settings, Object.keys(entries).length > 0);
+
+  // Özet kartındaki yıllık izin çipi: içinde bulunulan dönem.
+  const annualLeave = leaveBalance(entries, new Date(), settings);
 
   const closeSheet = useCallback(() => setSelectedDay(null), []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
@@ -133,6 +137,7 @@ export default function App() {
             hourlyRate={settings.hourlyRate}
             onRateChange={(rate) => void updateSettings({ hourlyRate: rate })}
             onShare={() => setShareOpen(true)}
+            annualLeave={annualLeave}
           />
           <BackupReminder
             message={backupMessage}
@@ -153,6 +158,8 @@ export default function App() {
       <DaySheet
         date={selectedDay}
         entry={selectedDay ? entries[toDateKey(selectedDay)] : undefined}
+        entries={entries}
+        leaveSettings={settings}
         onSave={saveEntry}
         onClear={removeEntry}
         onClose={closeSheet}
@@ -180,6 +187,7 @@ export default function App() {
         settings={settings}
         onThemeChange={(theme) => void updateSettings({ theme })}
         onSoundChange={(sound) => void updateSettings({ sound })}
+        onLeaveChange={(patch) => void updateSettings(patch)}
         onBackup={runBackup}
         onRestore={restore}
         onDeleteAll={deleteAll}

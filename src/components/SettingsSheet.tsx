@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Download, Trash2, Upload, Volume2, VolumeX } from 'lucide-react';
+import { Download, Trash2, Upload, Volume2, VolumeX, X } from 'lucide-react';
 import BottomSheet from './BottomSheet';
 import Segmented from './Segmented';
 import { parseBackup } from '../lib/backup';
 import { formatLastBackup } from '../lib/backupReminder';
+import { toDateKey } from '../lib/dates';
+import { formatPeriod, getLeavePeriod } from '../lib/leave';
 import { playSuccess, setSoundEnabled } from '../lib/sound';
 import type { Backup, SaveResult } from '../lib/backup';
 import type { Settings, ThemeMode } from '../types';
@@ -14,6 +16,7 @@ type Props = {
   settings: Settings;
   onThemeChange: (theme: ThemeMode) => void;
   onSoundChange: (enabled: boolean) => void;
+  onLeaveChange: (patch: Partial<Pick<Settings, 'annualLeaveDays' | 'hireDate' | 'leaveCarryOver'>>) => void;
   onBackup: () => Promise<SaveResult>;
   onRestore: (backup: Backup) => Promise<void>;
   onDeleteAll: () => Promise<void>;
@@ -39,6 +42,7 @@ function SettingsContent({
   settings,
   onThemeChange,
   onSoundChange,
+  onLeaveChange,
   onBackup,
   onRestore,
   onDeleteAll,
@@ -129,6 +133,53 @@ function SettingsContent({
         </span>
       </button>
 
+      <SectionLabel>Yıllık izin</SectionLabel>
+      <div className="rounded-2xl" style={{ background: 'var(--bg)' }}>
+        <FieldRow label="Yıllık hak (gün)">
+          <DayCountInput
+            label="Yıllık izin hakkı (gün)"
+            value={settings.annualLeaveDays}
+            onCommit={(annualLeaveDays) => onLeaveChange({ annualLeaveDays })}
+          />
+        </FieldRow>
+        <FieldRow label="Devreden gün" divider>
+          <DayCountInput
+            label="Önceki dönemden devreden gün"
+            value={settings.leaveCarryOver}
+            onCommit={(leaveCarryOver) => onLeaveChange({ leaveCarryOver })}
+          />
+        </FieldRow>
+        <FieldRow label="İşe giriş tarihi" divider>
+          <div className="flex items-center gap-1">
+            {settings.hireDate && (
+              <button
+                type="button"
+                onClick={() => onLeaveChange({ hireDate: undefined })}
+                aria-label="İşe giriş tarihini temizle"
+                className="flex h-11 w-9 items-center justify-center rounded-full"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <X size={16} />
+              </button>
+            )}
+            <input
+              type="date"
+              aria-label="İşe giriş tarihi"
+              value={settings.hireDate ?? ''}
+              max={toDateKey(new Date())}
+              onChange={(e) => onLeaveChange({ hireDate: e.target.value || undefined })}
+              className="h-10 rounded-xl px-2 outline-none"
+              style={{ background: 'var(--surface)', color: 'var(--text)' }}
+            />
+          </div>
+        </FieldRow>
+      </div>
+      <p className="mt-2 px-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+        {settings.hireDate ? 'Dönem' : 'Dönem (işe giriş tarihi girilmediği için takvim yılı)'}:{' '}
+        {formatPeriod(getLeavePeriod(new Date(), settings.hireDate))}. Devreden gün yalnızca
+        bu döneme eklenir; yeni dönemde güncelle.
+      </p>
+
       <SectionLabel>Veriler</SectionLabel>
       <div className="space-y-2">
         <ActionButton icon={<Download size={20} />} onClick={handleBackup}>
@@ -213,6 +264,64 @@ function SettingsContent({
         </motion.p>
       )}
     </BottomSheet>
+  );
+}
+
+function FieldRow({
+  label,
+  divider,
+  children,
+}: {
+  label: string;
+  divider?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="flex min-h-12 items-center justify-between gap-3 px-4"
+      style={divider ? { borderTop: '1px solid color-mix(in srgb, var(--text-muted) 18%, transparent)' } : undefined}
+    >
+      <span className="text-[15px]">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+/** 0–366 arası tam gün sayısı girişi; odaktan çıkınca kaydedilir, geçersizse eski değere döner. */
+function DayCountInput({
+  label,
+  value,
+  onCommit,
+}: {
+  label: string;
+  value: number;
+  onCommit: (value: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(value));
+
+  useEffect(() => setDraft(String(value)), [value]);
+
+  const commit = () => {
+    const n = Number(draft);
+    if (draft.trim() !== '' && Number.isInteger(n) && n >= 0 && n <= 366) {
+      if (n !== value) onCommit(n);
+    } else {
+      setDraft(String(value));
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      aria-label={label}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value.replace(/\D/g, '').slice(0, 3))}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+      className="h-10 w-20 rounded-xl px-3 text-right outline-none"
+      style={{ background: 'var(--surface)', color: 'var(--text)' }}
+    />
   );
 }
 

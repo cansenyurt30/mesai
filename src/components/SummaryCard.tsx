@@ -17,6 +17,8 @@ type Props = {
   hourlyRate: number;
   onRateChange: (rate: number) => void;
   onShare: () => void;
+  /** İçinde bulunulan dönemin yıllık izin durumu (bkz. lib/leave.ts). */
+  annualLeave?: { remaining: number; total: number };
 };
 
 const HIDDEN_TEXT = '••••• ₺';
@@ -27,6 +29,7 @@ export default function SummaryCard({
   hourlyRate,
   onRateChange,
   onShare,
+  annualLeave,
 }: Props) {
   // "Açık" durumu kaydedilmez: her açılışta ve arka plandan dönüşte gizli başlar.
   const [revealed, setRevealed] = useState(false);
@@ -177,10 +180,18 @@ export default function SummaryCard({
         )}
       </div>
 
-      <div className="relative mt-3 flex">
+      <div className="relative mt-3 flex flex-wrap gap-2">
         <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-md">
           {leaveDays} gün izin
         </span>
+        {/* Yıllık izin durumu para değil, gizlenmez. Hak aşılırsa engellemeden nazikçe uyarır. */}
+        {annualLeave && annualLeave.total > 0 && (
+          <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-md">
+            {annualLeave.remaining >= 0
+              ? `Yıllık izin: ${annualLeave.remaining} / ${annualLeave.total} kaldı`
+              : `Yıllık izin hakkını ${-annualLeave.remaining} gün aştın`}
+          </span>
+        )}
       </div>
     </section>
   );

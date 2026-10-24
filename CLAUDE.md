@@ -125,8 +125,8 @@ type Settings = {
 
 ## Geliştirme Adımları
 
-> **Durum:** Adım 1–12, 14 ve 18 tamamlandı; 13 bilerek ertelendi. 1–14 canlıda (https://cansenyurt30.github.io/mesai/); 18 push bekliyor.
-> **Sıradaki adım:** 16 (sonra 17 → 15; 13 daha sonra). Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
+> **Durum:** Adım 1–12, 14, 16 ve 18 tamamlandı; 13 bilerek ertelendi. 16 push bekliyor (https://cansenyurt30.github.io/mesai/).
+> **Sıradaki adım:** 17 (sonra 15; 13 daha sonra). Adım 16 cevapları: dönem = işe giriş yıldönümü, hak = 14 gün, devreden gün elle girilir. Kaldığın yeri anlamak için önce `PROJE_NOTLARI.md`'yi oku.
 
 ### Tamamlananlar (1–12)
 
@@ -299,6 +299,6 @@ Sorun: Şu an toplam ücret, o anki tek saatlik ücretle hesaplanıyor. Ücret d
 - [ ] Güncellemeden sonra mevcut kayıtlar ve ücret olduğu gibi durur.
 - [x] 30 günden eski yedekte hatırlatma çıkar. "Sonra" denince 7 gün görünmez.
 - [ ] İstatistik ekranında yıllık grafik ve toplamlar doğru. Kazanç gizli başlar.
-- [ ] İzin türü seçilebilir. Yıllık izin kalan günü doğru sayılır.
+- [x] İzin türü seçilebilir. Yıllık izin kalan günü doğru sayılır.
 - [ ] Birden fazla gün tek seferde mesai ya da izin olarak işaretlenebilir.
 - [x] Notlu günlerde nokta görünür, "Bugün" butonu çalışır, ay raporu paylaşılabilir. Ücret, paylaşılan rapora varsayılan olarak eklenmez.

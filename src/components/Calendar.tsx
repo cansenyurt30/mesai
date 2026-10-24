@@ -15,6 +15,7 @@ import {
   formatMonthTitle,
   toDateKey,
 } from '../lib/dates';
+import { leaveCellLabel } from '../lib/leave';
 import type { EntryMap } from '../hooks/useEntries';
 import type { DayEntry } from '../types';
 
@@ -297,7 +298,7 @@ function DayCell({ day, isToday, entry, onSelect }: DayCellProps) {
   const label = isMesai
     ? formatHoursShort(entry.hours ?? 0)
     : isLeave
-      ? 'İzin'
+      ? leaveCellLabel(entry.leaveType)
       : null;
 
   // Kayıt değişince dolgu yeniden "pop" yapar.
